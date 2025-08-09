@@ -9,4 +9,5 @@ FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app
 COPY --from=publish /app .
 
-ENTRYPOINT ["sh","-c","dotnet PIM.dll --urls http://0.0.0.0:${PORT}"]
+ENV ASPNETCORE_URLS=http://0.0.0.0:${PORT}
+ENTRYPOINT ["dotnet", "PIM.dll"]
