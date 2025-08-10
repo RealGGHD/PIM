@@ -23,9 +23,15 @@ builder.Services
     {
         options.ClientId = builder.Configuration["Google:ClientId"]!;
         options.ClientSecret = builder.Configuration["Google:ClientSecret"]!;
-        // (опционально) маппинг фотки/локали — если у тебя уже работает MapJsonKey
-        // options.ClaimActions.MapJsonKey("urn:google:picture", "picture");
+
+        // ВАЖНО: маппинг картинки в клейм
+        options.ClaimActions.MapJsonKey("urn:google:picture", "picture");
+        // опционально:
         // options.ClaimActions.MapJsonKey("urn:google:locale", "locale");
+
+        // (не обязательно, но можно явно указать)
+        // options.Scope.Add("profile");
+        // options.Scope.Add("email");
     })
     .AddGitHub(options =>
     {
