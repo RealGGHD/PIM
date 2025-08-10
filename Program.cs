@@ -1,40 +1,45 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.HttpOverrides;
+using AspNet.Security.OAuth.GitHub;
 using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// MVC
 builder.Services.AddControllersWithViews();
 
-// Auth: Cookie + Google, читаем из конфигурации (в т.ч. из переменных окружения)
 builder.Services
     .AddAuthentication(options =>
     {
         options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+        // ВАЖНО: DefaultChallengeScheme НЕ задаём — будем вызывать провайдера по имени вручную.
     })
     .AddCookie(options =>
     {
-        options.LoginPath = "/auth/login";
+        options.LoginPath = "/auth/login";   // будем показывать страницу выбора
         options.LogoutPath = "/auth/logout";
     })
     .AddGoogle(options =>
     {
-        // Эти ключи автоматически подхватятся из переменных окружения:
-        // Google__ClientId, Google__ClientSecret
         options.ClientId = builder.Configuration["Google:ClientId"]!;
         options.ClientSecret = builder.Configuration["Google:ClientSecret"]!;
-
-        // Доп.клеймы (необязательно)
-        options.ClaimActions.MapJsonKey("urn:google:picture", "picture");
-        options.ClaimActions.MapJsonKey("urn:google:locale", "locale");
+        // (опционально) маппинг фотки/локали — если у тебя уже работает MapJsonKey
+        // options.ClaimActions.MapJsonKey("urn:google:picture", "picture");
+        // options.ClaimActions.MapJsonKey("urn:google:locale", "locale");
+    })
+    .AddGitHub(options =>
+    {
+        options.ClientId = builder.Configuration["GitHub:ClientId"]!;
+        options.ClientSecret = builder.Configuration["GitHub:ClientSecret"]!;
+        options.SaveTokens = true;
+        options.Scope.Add("user:email"); // чтобы получить email (primary/verified)
+        options.ClaimActions.MapJsonKey("urn:github:login", "login");
+        options.ClaimActions.MapJsonKey("urn:github:url", "html_url");
+        options.ClaimActions.MapJsonKey("urn:github:avatar", "avatar_url");
     });
 
 var app = builder.Build();
 
-// Важно для Render за прокси — чтобы схема и хост определялись корректно
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor
@@ -42,7 +47,6 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 
 app.UseStaticFiles();
 app.UseRouting();
-
 app.UseAuthentication();
 app.UseAuthorization();
 

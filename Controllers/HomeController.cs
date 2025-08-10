@@ -16,12 +16,16 @@ public class HomeController : Controller
         ViewBag.Name =
             User.FindFirst(ClaimTypes.Name)?.Value
             ?? User.FindFirst("name")?.Value
-            ?? User.FindFirst("given_name")?.Value;
+            ?? User.FindFirst("given_name")?.Value
+            ?? User.FindFirst("urn:github:login")?.Value; // ник как запасной
         ViewBag.Email =
             User.FindFirst(ClaimTypes.Email)?.Value
             ?? User.FindFirst("email")?.Value
             ?? User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
-        ViewBag.Pic    = User.FindFirst("urn:google:picture")?.Value;
+        ViewBag.Pic = 
+            User.FindFirst("urn:google:picture")?.Value
+            ?? User.FindFirst("urn:github:avatar")?.Value
+            ?? User.FindFirst("picture")?.Value;
         ViewBag.Locale = User.FindFirst("urn:google:locale")?.Value;
 
         return View("Index", claims);
