@@ -1,0 +1,36 @@
+﻿@model IEnumerable<(string Type, string Value)>
+@{
+    Layout = null;
+    var name = ViewBag.Name as string;
+    var email = ViewBag.Email as string;
+    var pic = ViewBag.Pic as string;
+    var locale = ViewBag.Locale as string;
+}
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Profile</title></head>
+<body>
+<h2>Данные профиля Google</h2>
+
+<p><strong>Name:</strong> @name</p>
+<p><strong>Email:</strong> @email</p>
+<p><strong>Locale:</strong> @locale</p>
+@if (!string.IsNullOrEmpty(pic)) {
+    <p><img src="@pic" alt="avatar" style="max-width:120px" /></p>
+}
+
+<h3>Все клеймы</h3>
+<pre>
+@foreach (var c in Model)
+{
+@:Type: @c.Type
+@:Value: @c.Value
+
+}
+  </pre>
+
+<form method="post" action="/auth/logout">
+    <button type="submit">Выйти</button>
+</form>
+</body>
+</html>
